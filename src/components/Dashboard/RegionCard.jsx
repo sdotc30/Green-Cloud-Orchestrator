@@ -6,13 +6,22 @@ const providerColors = {
   Azure: "bg-sky-100 text-sky-700 border-sky-200",
 };
 
-function RegionCard({ region, isSelected, animationDelay = 0 }) {
+function RegionCard({ region, isSelected, onSelect, animationDelay = 0 }) {
   return (
     <div
-      className={`relative overflow-hidden rounded-xl border transition-all duration-300 ${
+      onClick={() => onSelect(region)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect(region);
+        }
+      }}
+      className={`relative overflow-hidden rounded-xl border transition-all duration-300 cursor-pointer outline-none focus:ring-4 focus:ring-brand-200 ${
         isSelected
           ? "ring-2 ring-green-600 shadow-lg bg-green-50"
-          : "shadow-sm hover:shadow-md bg-white"
+          : "shadow-sm hover:shadow-md bg-white hover:border-green-200"
       }`}
       style={{ animationDelay: `${animationDelay}ms` }}
     >
