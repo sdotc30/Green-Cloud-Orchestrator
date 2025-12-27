@@ -1,4 +1,4 @@
-const API_BASE = "https://green-cloud-orchestration.onrender.com";
+const API_BASE = import.meta.env.VITE_API_BASE;
 import axios from 'axios';
 
 export async function fetchCarbonIntensity(selectedZones) {
