@@ -1,5 +1,4 @@
-import dotenv from "dotenv";
-const API_BASE = process.env.API_BASE;
+const API_BASE = import.meta.env.VITE_API_BASE;
 import axios from 'axios';
 
 export async function fetchCarbonIntensity(selectedZones) {
