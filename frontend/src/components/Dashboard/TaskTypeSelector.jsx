@@ -29,7 +29,7 @@ function TaskTypeSelector({ value, onChange }) {
 
   return (
     <div className="w-full max-w-md">
-      <label className="block text-sm font-medium text-gray-600 mb-2">
+      <label className="block text-lg font-bold text-gray-700 mb-2">
         Select Task Type
       </label>
 

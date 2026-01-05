@@ -47,7 +47,7 @@ function GreenScoreChart({ regions, selectedRegionId }) {
             />
             <XAxis
               dataKey="name"
-              tick={{ fontSize: 11, fill: "#6b7280" }}
+              tick={{ fontSize: 13, fill: "#374151", fontWeight: "bold" }}
               angle={-45}
               textAnchor="end"
               height={60}
@@ -55,7 +55,7 @@ function GreenScoreChart({ regions, selectedRegionId }) {
               tickLine={false}
             />
             <YAxis
-              tick={{ fontSize: 12, fill: "#6b7280" }}
+              tick={{ fontSize: 14, fill: "#374151", fontWeight: "bold" }}
               axisLine={false}
               tickLine={false}
               label={{
@@ -63,8 +63,9 @@ function GreenScoreChart({ regions, selectedRegionId }) {
                 angle: -90,
                 position: "insideLeft",
                 style: {
-                  fontSize: 12,
-                  fill: "#6b7280",
+                  fontSize: 14,
+                  fill: "#374151",
+                  fontWeight: "bold",
                 },
               }}
             />
@@ -99,7 +100,7 @@ function GreenScoreChart({ regions, selectedRegionId }) {
           </BarChart>
         </ResponsiveContainer>
 
-        <p className="text-xs text-gray-500 text-center mt-2">
+        <p className="text-sm font-bold text-gray-600 text-center mt-2">
           Lower Green Score = Lower Carbon Footprint
         </p>
       </div>

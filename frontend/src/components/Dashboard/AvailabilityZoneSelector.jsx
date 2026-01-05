@@ -1,56 +1,47 @@
 import { Globe, X, ChevronDown, Check } from "lucide-react";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
 import { useEffect, useRef } from "react";
-import { fetchCarbonIntensity } from "../../services/api"; // Keep this!
-import { AWS_REGIONS } from "/constants/regions";     // Import the new list
+import { fetchCarbonIntensity } from "../../services/api";
+import { AWS_REGIONS } from "/constants/regions";
 
-// 1. Generate the 'zones' list dynamically from your constants file
-// This replaces the hardcoded 'const zones = [...]' array.
+
 const zones = AWS_REGIONS.map(region => ({
   value: region.id,
   label: region.name
 }));
 
 function AvailabilityZoneSelector({ value, onChange, disabled }) {
-  
-  // 2. Safety Check
+
   const selectedValues = Array.isArray(value) ? value : [];
   const prevSelect = useRef([]);
 
-  // 3. THE "MAGIC" EFFECT (Restored from your old code)
-  // This logic ensures we only fetch the *newly added* region, one at a time.
   useEffect(() => {
-    // Find items that are in 'selectedValues' but NOT in 'prevSelect'
     const newSelect = selectedValues.filter((val) => !prevSelect.current.includes(val));
-    
-    // Only call the API if there is a NEW selection
+
     if (newSelect.length > 0) {
-      // This sends just the NEW item (e.g. ['us-east-1']) to the API
-      // preventing the "regionA+regionB" crash.
       fetchCarbonIntensity(newSelect);
     }
-    
-    // Update history so we don't re-fetch it later
+
     prevSelect.current = [...prevSelect.current, ...newSelect];
   }, [selectedValues]);
 
   // Helper to remove a tag
   const removeZone = (e, zoneValue) => {
-    e.preventDefault(); 
-    e.stopPropagation(); 
+    e.preventDefault();
+    e.stopPropagation();
     onChange(selectedValues.filter((v) => v !== zoneValue));
   };
 
   return (
     <div className="w-full max-w-md">
-      <label className="block text-sm font-medium text-gray-600 mb-2">
+      <label className="block text-lg font-bold text-gray-700 mb-2">
         Availability Zone
       </label>
 
-      <Listbox 
-        value={selectedValues} 
-        onChange={onChange} 
-        multiple 
+      <Listbox
+        value={selectedValues}
+        onChange={onChange}
+        multiple
         disabled={disabled}
       >
         <div className="relative">
@@ -72,8 +63,8 @@ function AvailabilityZoneSelector({ value, onChange, disabled }) {
                   <span key={val} className="inline-flex items-center gap-1 px-2 py-1 bg-blue-50 text-blue-700 text-sm rounded-md border border-blue-100">
                     {/* Dynamic Label Lookup */}
                     {zones.find((z) => z.value === val)?.label || val}
-                    <X 
-                      className="w-3 h-3 cursor-pointer hover:text-blue-900" 
+                    <X
+                      className="w-3 h-3 cursor-pointer hover:text-blue-900"
                       onClick={(e) => removeZone(e, val)}
                     />
                   </span>

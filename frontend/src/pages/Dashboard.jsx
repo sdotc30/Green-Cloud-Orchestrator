@@ -11,11 +11,15 @@ import GreenScoreChart from "../components/Dashboard/GreenScoreChart";
 import RoutingDecisionCard from "../components/Dashboard/RoutingDecisionCard";
 import InfoPanel from "../components/Dashboard/InfoPanel";
 import PhaseDisclaimer from "../components/Dashboard/PhaseDisclaimer";
+import ImpactStats from "../components/ImpactStats";
+import Pricing from "../components/Pricing";
+import ContextWidgets from "../components/ContextWidgets";
+
 
 // Services & Data Logic
-import { fetchCarbonIntensity } from "../services/api"; 
-import { measureLatency } from "../services/latencyService"; // <--- 1. NEW IMPORT
-import { getPingUrl } from "../utils/urlGenerator";          // <--- 2. CORRECTED IMPORT NAME
+import { fetchCarbonIntensity } from "../services/api";
+import { measureLatency } from "../services/latencyService";
+import { getPingUrl } from "../utils/urlGenerator";
 
 import {
   generateCloudRegions,
@@ -27,7 +31,7 @@ function Dashboard() {
   // --- STATE MANAGEMENT ---
   const [taskType, setTaskType] = useState("green");
   const [selectedProvider, setSelectedProvider] = useState("");
-  const [selectedZone, setSelectedZone] = useState([]); 
+  const [selectedZone, setSelectedZone] = useState([]);
   const [applicationUrl, setApplicationUrl] = useState("");
   const [manualSelection, setManualSelection] = useState(null);
 
@@ -47,19 +51,19 @@ function Dashboard() {
       setLoading(true);
       try {
         // --- STEP 2: PREPARE TASKS ---
-        
+
         // Task A: Ask Backend for Carbon Data
         const carbonPromise = fetchCarbonIntensity(selectedZone);
 
         // Task B: Ask Browser to Ping AWS Regions (Client-Side)
         const latencyPromises = selectedZone.map(async (zoneCode) => {
-           // We generate the URL dynamically using your renamed Utility
-           const url = getPingUrl(zoneCode); // <--- 3. CORRECTED FUNCTION CALL
-           
-           // If we have a URL, measure it. If not, return default high latency.
-           const latency = url ? await measureLatency(url) : 0;
-           
-           return { id: zoneCode, latency };
+          // We generate the URL dynamically using your renamed Utility
+          const url = getPingUrl(zoneCode); // <--- 3. CORRECTED FUNCTION CALL
+
+          // If we have a URL, measure it. If not, return default high latency.
+          const latency = url ? await measureLatency(url) : 0;
+
+          return { id: zoneCode, latency };
         });
 
         // --- STEP 3: FIRE PARALLEL REQUESTS ---
@@ -72,18 +76,18 @@ function Dashboard() {
         const mergedData = carbonResults.map((carbonItem) => {
           // Find the matching latency result
           const matchingLatency = latencyResults.find(l => l.id === carbonItem.regionCode);
-          
+
           return {
             ...carbonItem, // Contains: regionCode, carbonIntensity
             estimatedLatency: matchingLatency ? matchingLatency.latency : 0,
-            provider: "AWS" 
+            provider: "AWS"
           };
         });
-        
+
         // --- STEP 5: GENERATE RICH UI OBJECTS ---
         // Ensure generateCloudRegions inside regionData.js uses 'estimatedLatency'
         const formattedRegions = generateCloudRegions(mergedData);
-        
+
         setRegionData(formattedRegions);
 
       } catch (error) {
@@ -94,7 +98,7 @@ function Dashboard() {
     };
 
     loadData();
-  }, [selectedZone]); 
+  }, [selectedZone]);
 
   // --- DERIVED STATE (Filtering) ---
   const filteredRegions = regionData.filter((region) => {
@@ -107,11 +111,17 @@ function Dashboard() {
 
   // --- UI RENDER ---
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-10">
-        
+    <div className="min-h-screen bg-gradient-to-b from-green-50/50 via-white to-white selection:bg-green-100">
+      <div className="max-w-7xl mx-auto px-6 py-12 space-y-16">
+
         {/* Header */}
         <DashboardHeader />
+
+        {/* Context Widgets (NEW) */}
+        <ContextWidgets />
+
+        {/* Impact Stats Section (NEW) */}
+        <ImpactStats />
 
         {/* Input Section */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -144,9 +154,9 @@ function Dashboard() {
 
         {/* Content Area */}
         {loading ? (
-           <div className="text-center py-20 text-gray-500 flex flex-col items-center gap-2">
-             <span>Measuring Carbon & Network Latency...</span>
-           </div>
+          <div className="text-center py-20 text-gray-500 flex flex-col items-center gap-2">
+            <span>Measuring Carbon & Network Latency...</span>
+          </div>
         ) : filteredRegions.length > 0 ? (
           <>
             <div className="grid lg:grid-cols-3 gap-8">
@@ -195,6 +205,10 @@ function Dashboard() {
         )}
 
         <InfoPanel />
+
+        {/* Pricing Section (NEW) */}
+        {/*<Pricing />*/}
+
         <PhaseDisclaimer />
       </div>
     </div>

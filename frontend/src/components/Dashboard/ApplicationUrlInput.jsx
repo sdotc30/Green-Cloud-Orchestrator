@@ -3,7 +3,7 @@ import { Link } from "lucide-react";
 function ApplicationUrlInput({ value, onChange }) {
   return (
     <div className="w-full max-w-md">
-      <label className="block text-sm font-medium text-gray-600 mb-2">
+      <label className="block text-lg font-bold text-gray-700 mb-2">
         Application URL
       </label>
 
