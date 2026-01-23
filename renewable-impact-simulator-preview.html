@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Renewable Impact Simulator - Preview</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: "#ecfdf5",
+                            500: "#10b981",
+                            600: "#059669",
+                            700: "#047857",
+                        },
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #10b981;
+            border: 3px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+            transition: all 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.6);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: #10b981;
+            border: 3px solid white;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+            transition: all 0.2s;
+        }
+
+        input[type="range"]::-moz-range-thumb:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.6);
+        }
+    </style>
+</head>
+
+<body class="bg-gradient-to-b from-green-50/50 via-white to-white">
+    <div id="app"></div>
+
+    <script type="module">
+        // Sample data centers
+        const SAMPLE_DATA_CENTERS = [
+            {
+                id: "dc-1",
+                name: "AWS US-East-1 (Virginia)",
+                carbonIntensity: 420,
+                pue: 1.2,
+            },
+            {
+                id: "dc-2",
+                name: "AWS EU-West-1 (Ireland)",
+                carbonIntensity: 280,
+                pue: 1.15,
+            },
+            {
+                id: "dc-3",
+                name: "GCP US-Central-1 (Iowa)",
+                carbonIntensity: 450,
+                pue: 1.1,
+            },
+            {
+                id: "dc-4",
+                name: "Azure West Europe (Netherlands)",
+                carbonIntensity: 320,
+                pue: 1.18,
+            },
+            {
+                id: "dc-5",
+                name: "AWS EU-North-1 (Stockholm)",
+                carbonIntensity: 15,
+                pue: 1.12,
+            },
+        ];
+
+        // State
+        let selectedDataCenter = SAMPLE_DATA_CENTERS[0];
+        let renewablePercentage = 30;
+
+        // Icons as SVG strings
+        const icons = {
+            leaf: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>',
+            zap: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+            trendingDown:
+                '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>',
+            info: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
+        };
+
+        function calculateEmissions() {
+            const workloadEnergy = 1;
+            const originalEmission =
+                selectedDataCenter.carbonIntensity *
+                selectedDataCenter.pue *
+                workloadEnergy;
+            const adjustedEmission =
+                selectedDataCenter.carbonIntensity *
+                (1 - renewablePercentage / 100) *
+                selectedDataCenter.pue *
+                workloadEnergy;
+            const percentageReduction =
+                originalEmission > 0
+                    ? ((originalEmission - adjustedEmission) / originalEmission) * 100
+                    : 0;
+
+            return { originalEmission, adjustedEmission, percentageReduction };
+        }
+
+        function render() {
+            const { originalEmission, adjustedEmission, percentageReduction } =
+                calculateEmissions();
+
+            document.getElementById("app").innerHTML = `
+        <div class="min-h-screen bg-gradient-to-b from-green-50/50 via-white to-white">
+          <div class="max-w-5xl mx-auto px-6 py-12 space-y-8">
+            
+            <!-- Header -->
+            <header class="text-center space-y-3">
+              <div class="flex items-center justify-center gap-3">
+                <div class="p-3 bg-gradient-to-br from-green-500 to-emerald-400 rounded-2xl shadow-lg">
+                  <div class="w-8 h-8 text-white">${icons.leaf}</div>
+                </div>
+                <h1 class="text-4xl font-bold bg-gradient-to-r from-green-600 to-emerald-500 bg-clip-text text-transparent">
+                  Renewable Impact Simulator
+                </h1>
+              </div>
+              <p class="text-gray-600 max-w-2xl mx-auto">
+                Explore how increasing renewable energy adoption reduces carbon emissions for your data center workloads
+              </p>
+            </header>
+
+            <!-- Input Section -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
+              <h2 class="text-xl font-semibold flex items-center gap-2">
+                <span class="w-1.5 h-6 rounded-full bg-green-600"></span>
+                Configuration
+              </h2>
+
+              <!-- Data Center Selector -->
+              <div class="space-y-2">
+                <label class="block text-sm font-medium text-gray-700">
+                  Select Data Center
+                </label>
+                <select
+                  id="datacenter-select"
+                  class="w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition-all"
+                >
+                  ${SAMPLE_DATA_CENTERS.map(
+                (dc) => `
+                    <option value="${dc.id}" ${dc.id === selectedDataCenter.id ? "selected" : ""}>
+                      ${dc.name} — ${dc.carbonIntensity} gCO₂/kWh, PUE: ${dc.pue}
+                    </option>
+                  `,
+            ).join("")}
+                </select>
+              </div>
+
+              <!-- Data Center Details -->
+              <div class="grid grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
+                <div>
+                  <span class="block text-xs text-gray-500 mb-1">Carbon Intensity</span>
+                  <span class="text-lg font-semibold text-gray-800">
+                    ${selectedDataCenter.carbonIntensity} gCO₂/kWh
+                  </span>
+                </div>
+                <div>
+                  <span class="block text-xs text-gray-500 mb-1">PUE</span>
+                  <span class="text-lg font-semibold text-gray-800">
+                    ${selectedDataCenter.pue}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Renewable Percentage Slider -->
+              <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <label class="text-sm font-medium text-gray-700">
+                    Renewable Energy Percentage
+                  </label>
+                  <span class="text-2xl font-bold text-green-600">
+                    ${renewablePercentage}%
+                  </span>
+                </div>
+                
+                <input
+                  type="range"
+                  id="renewable-slider"
+                  min="0"
+                  max="100"
+                  value="${renewablePercentage}"
+                  class="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-green"
+                  style="background: linear-gradient(to right, #10b981 0%, #10b981 ${renewablePercentage}%, #e5e7eb ${renewablePercentage}%, #e5e7eb 100%)"
+                />
+                
+                <div class="flex justify-between text-xs text-gray-500">
+                  <span>0% Renewable</span>
+                  <span>100% Renewable</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Results Section -->
+            <div class="grid md:grid-cols-3 gap-6">
+              
+              <!-- Original Emission -->
+              <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-3 hover:shadow-md transition-shadow">
+                <div class="flex items-center gap-2 text-gray-600">
+                  <div class="w-5 h-5">${icons.zap}</div>
+                  <h3 class="font-semibold">Original Emission</h3>
+                </div>
+                <div class="space-y-1">
+                  <p class="text-3xl font-bold text-gray-800">
+                    ${originalEmission.toFixed(2)}
+                  </p>
+                  <p class="text-sm text-gray-500">gCO₂ per kWh workload</p>
+                </div>
+              </div>
+
+              <!-- Adjusted Emission -->
+              <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl shadow-sm border border-green-200 p-6 space-y-3 hover:shadow-md transition-shadow">
+                <div class="flex items-center gap-2 text-green-700">
+                  <div class="w-5 h-5">${icons.leaf}</div>
+                  <h3 class="font-semibold">Adjusted Emission</h3>
+                </div>
+                <div class="space-y-1">
+                  <p class="text-3xl font-bold text-green-700">
+                    ${adjustedEmission.toFixed(2)}
+                  </p>
+                  <p class="text-sm text-green-600">gCO₂ per kWh workload</p>
+                </div>
+              </div>
+
+              <!-- Percentage Reduction -->
+              <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl shadow-sm border border-blue-200 p-6 space-y-3 hover:shadow-md transition-shadow">
+                <div class="flex items-center gap-2 text-blue-700">
+                  <div class="w-5 h-5">${icons.trendingDown}</div>
+                  <h3 class="font-semibold">Reduction</h3>
+                </div>
+                <div class="space-y-1">
+                  <p class="text-3xl font-bold text-blue-700">
+                    ${percentageReduction.toFixed(1)}%
+                  </p>
+                  <p class="text-sm text-blue-600">Emissions saved</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Explanation Section -->
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
+              <div class="flex gap-3">
+                <div class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5">${icons.info}</div>
+                <div class="space-y-2">
+                  <h3 class="font-semibold text-blue-900">About This Simulation</h3>
+                  <p class="text-sm text-blue-800 leading-relaxed">
+                    This is a <strong>scenario-based simulation</strong> showing how increased renewable energy adoption 
+                    can reduce carbon emissions for the same data center and workload. The calculation assumes renewable 
+                    energy sources have near-zero operational carbon emissions. Adjusting the renewable percentage slider 
+                    demonstrates the potential environmental impact of transitioning to cleaner energy sources.
+                  </p>
+                  <p class="text-xs text-blue-700 mt-2">
+                    <strong>Formula:</strong> Adjusted Emission = Carbon Intensity × (1 − Renewable% / 100) × PUE × Workload Energy
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer Note -->
+            <div class="text-center text-sm text-gray-500 pt-4">
+              <p>
+                This is a standalone demonstration page using sample data. 
+                No backend APIs or external services are connected.
+              </p>
+            </div>
+
+          </div>
+        </div>
+      `;
+
+            // Attach event listeners
+            document
+                .getElementById("datacenter-select")
+                .addEventListener("change", (e) => {
+                    selectedDataCenter = SAMPLE_DATA_CENTERS.find(
+                        (dc) => dc.id === e.target.value,
+                    );
+                    render();
+                });
+
+            const slider = document.getElementById("renewable-slider");
+
+            // Use 'input' event for real-time updates while dragging
+            slider.addEventListener("input", (e) => {
+                renewablePercentage = Number(e.target.value);
+
+                // Update only the specific elements that need to change
+                const { originalEmission, adjustedEmission, percentageReduction } =
+                    calculateEmissions();
+
+                // Update percentage display
+                document.querySelector(
+                    ".text-2xl.font-bold.text-green-600",
+                ).textContent = `${renewablePercentage}%`;
+
+                // Update slider background
+                e.target.style.background = `linear-gradient(to right, #10b981 0%, #10b981 ${renewablePercentage}%, #e5e7eb ${renewablePercentage}%, #e5e7eb 100%)`;
+
+                // Update result cards
+                const resultValues = document.querySelectorAll(".text-3xl.font-bold");
+                resultValues[0].textContent = originalEmission.toFixed(2);
+                resultValues[1].textContent = adjustedEmission.toFixed(2);
+                resultValues[2].textContent = percentageReduction.toFixed(1) + "%";
+            });
+        }
+
+        // Initial render
+        render();
+    </script>
+</body>
+
+</html>
