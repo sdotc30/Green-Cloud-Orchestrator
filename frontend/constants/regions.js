@@ -217,9 +217,126 @@ export const AWS_REGIONS = [
    },*/
 ];
 
+// --- GOOGLE CLOUD PLATFORM REGIONS ---
+// Only regions supported by Electricity Maps API
+export const GCP_REGIONS = [
+  // --- Americas ---
+  {
+    id: "us-central1",
+    name: "US Central (Iowa)",
+    zone: "North America",
+    pue: 1.10,
+  },
+  {
+    id: "us-east1",
+    name: "US East (South Carolina)",
+    zone: "North America",
+    pue: 1.10,
+  },
+  {
+    id: "us-west1",
+    name: "US West (Oregon)",
+    zone: "North America",
+    pue: 1.10,
+  },
+  {
+    id: "southamerica-east1",
+    name: "South America (São Paulo)",
+    zone: "South America",
+    pue: 1.10,
+  },
+
+  // --- Europe ---
+  {
+    id: "europe-west1",
+    name: "Europe (Belgium)",
+    zone: "Europe",
+    pue: 1.10,
+  },
+  {
+    id: "europe-west2",
+    name: "Europe (London)",
+    zone: "Europe",
+    pue: 1.10,
+  },
+  {
+    id: "europe-west3",
+    name: "Europe (Frankfurt)",
+    zone: "Europe",
+    pue: 1.10,
+  },
+  {
+    id: "europe-north1",
+    name: "Europe (Finland)",
+    zone: "Europe",
+    pue: 1.10,
+  },
+  {
+    id: "europe-west9",
+    name: "Europe (Paris)",
+    zone: "Europe",
+    pue: 1.10,
+  },
+
+  // --- Asia Pacific ---
+  {
+    id: "asia-northeast1",
+    name: "Asia Pacific (Tokyo)",
+    zone: "Asia Pacific",
+    pue: 1.10,
+  },
+  {
+    id: "asia-northeast3",
+    name: "Asia Pacific (Seoul)",
+    zone: "Asia Pacific",
+    pue: 1.10,
+  },
+  {
+    id: "asia-east1",
+    name: "Asia Pacific (Taiwan)",
+    zone: "Asia Pacific",
+    pue: 1.10,
+  },
+  {
+    id: "asia-east2",
+    name: "Asia Pacific (Hong Kong)",
+    zone: "Asia Pacific",
+    pue: 1.10,
+  },
+  {
+    id: "asia-south1",
+    name: "Asia Pacific (Mumbai)",
+    zone: "Asia Pacific",
+    pue: 1.10,
+  },
+
+  // --- Middle East ---
+  {
+    id: "me-central1",
+    name: "Middle East (Doha)",
+    zone: "Middle East",
+    pue: 1.10,
+  },
+  {
+    id: "me-central2",
+    name: "Middle East (Dammam)",
+    zone: "Middle East",
+    pue: 1.10,
+  },
+  {
+    id: "me-west1",
+    name: "Middle East (Tel Aviv)",
+    zone: "Middle East",
+    pue: 1.10,
+  },
+];
+
+// Combined regions for lookup
+export const ALL_REGIONS = [...AWS_REGIONS, ...GCP_REGIONS];
+
 // Helper: Fast Lookup Map (id -> object)
 // Usage: const region = REGION_LOOKUP["us-east-1"];
-export const REGION_LOOKUP = AWS_REGIONS.reduce((acc, region) => {
+export const REGION_LOOKUP = ALL_REGIONS.reduce((acc, region) => {
   acc[region.id] = region;
   return acc;
 }, {});

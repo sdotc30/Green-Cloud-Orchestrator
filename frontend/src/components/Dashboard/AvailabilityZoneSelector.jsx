@@ -1,29 +1,29 @@
 import { Globe, X, ChevronDown, Check } from "lucide-react";
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from "@headlessui/react";
-import { useEffect, useRef } from "react";
-import { fetchCarbonIntensity } from "../../services/api";
-import { AWS_REGIONS } from "/constants/regions";
+import { useMemo } from "react";
+import { AWS_REGIONS, GCP_REGIONS } from "/constants/regions";
 
+function AvailabilityZoneSelector({ value, onChange, disabled, provider }) {
+  // Filter zones based on selected provider
+  const zones = useMemo(() => {
+    let regionList = AWS_REGIONS; // Default
 
-const zones = AWS_REGIONS.map(region => ({
-  value: region.id,
-  label: region.name
-}));
-
-function AvailabilityZoneSelector({ value, onChange, disabled }) {
-
-  const selectedValues = Array.isArray(value) ? value : [];
-  const prevSelect = useRef([]);
-
-  useEffect(() => {
-    const newSelect = selectedValues.filter((val) => !prevSelect.current.includes(val));
-
-    if (newSelect.length > 0) {
-      fetchCarbonIntensity(newSelect);
+    if (provider === "GCP") {
+      regionList = GCP_REGIONS;
+    } else if (provider === "AWS") {
+      regionList = AWS_REGIONS;
+    } else if (!provider) {
+      // No provider selected - show all regions
+      regionList = [...AWS_REGIONS, ...GCP_REGIONS];
     }
 
-    prevSelect.current = [...prevSelect.current, ...newSelect];
-  }, [selectedValues]);
+    return regionList.map(region => ({
+      value: region.id,
+      label: region.name
+    }));
+  }, [provider]);
+
+  const selectedValues = Array.isArray(value) ? value : [];
 
   // Helper to remove a tag
   const removeZone = (e, zoneValue) => {

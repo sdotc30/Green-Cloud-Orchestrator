@@ -1,28 +1,29 @@
 const API_BASE = import.meta.env.VITE_API_BASE;
 import axios from 'axios';
 
-export async function fetchCarbonIntensity(selectedZones) {
+export async function fetchCarbonIntensity(selectedZones, provider = 'AWS') {
   try {
     const regions = Array.isArray(selectedZones) ? selectedZones : [selectedZones];
-    
+
     const apiCalls = regions.map(async (regionValue) => {
-      console.log("Fetching for:", regionValue);
-      
+      console.log("Fetching for:", regionValue, "Provider:", provider);
+
       const response = await axios.post(`${API_BASE}/api/carbon-footprint`, {
-        regionValue: regionValue
+        regionValue: regionValue,
+        provider: provider
       });
-      
+
       return response.data;
     });
 
     const results = await Promise.all(apiCalls);
-    
+
     console.log("All fetched data:", results);
-    return results; 
+    return results;
 
   } catch (error) {
     console.error("API Error:", error.message);
-    return []; 
+    return [];
   }
 }
 export async function getRouteDecision(taskType) {

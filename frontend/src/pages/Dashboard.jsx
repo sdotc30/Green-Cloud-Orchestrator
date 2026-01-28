@@ -48,17 +48,20 @@ function Dashboard() {
         return;
       }
 
+      // Determine provider for API calls (default to AWS if none selected)
+      const currentProvider = selectedProvider || "AWS";
+
       setLoading(true);
       try {
         // --- STEP 2: PREPARE TASKS ---
 
-        // Task A: Ask Backend for Carbon Data
-        const carbonPromise = fetchCarbonIntensity(selectedZone);
+        // Task A: Ask Backend for Carbon Data (with provider)
+        const carbonPromise = fetchCarbonIntensity(selectedZone, currentProvider);
 
         // Task B: Ask Browser to Ping AWS Regions (Client-Side)
         const latencyPromises = selectedZone.map(async (zoneCode) => {
-          // We generate the URL dynamically using your renamed Utility
-          const url = getPingUrl(zoneCode); // <--- 3. CORRECTED FUNCTION CALL
+          // We generate the URL dynamically based on provider
+          const url = getPingUrl(zoneCode, currentProvider);
 
           // If we have a URL, measure it. If not, return default high latency.
           const latency = url ? await measureLatency(url) : 0;
@@ -80,7 +83,7 @@ function Dashboard() {
           return {
             ...carbonItem, // Contains: regionCode, carbonIntensity
             estimatedLatency: matchingLatency ? matchingLatency.latency : 0,
-            provider: "AWS"
+            provider: currentProvider
           };
         });
 
@@ -98,7 +101,7 @@ function Dashboard() {
     };
 
     loadData();
-  }, [selectedZone]);
+  }, [selectedZone, selectedProvider]);
 
   // --- DERIVED STATE (Filtering) ---
   const filteredRegions = regionData.filter((region) => {
@@ -136,6 +139,7 @@ function Dashboard() {
             value={selectedProvider}
             onChange={(val) => {
               setSelectedProvider(val);
+              setSelectedZone([]); // Clear zones when provider changes
               setManualSelection(null);
             }}
           />
@@ -145,6 +149,7 @@ function Dashboard() {
               setSelectedZone(val);
               setManualSelection(null);
             }}
+            provider={selectedProvider}
           />
           <ApplicationUrlInput
             value={applicationUrl}

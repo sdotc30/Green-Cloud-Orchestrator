@@ -19,7 +19,7 @@ export function generateCloudRegions(apiData) {
     return {
       id: dataItem.regionCode,
 
-      provider: "AWS",
+      provider: dataItem.provider || "AWS",
 
       regionName: meta.name || dataItem.regionCode,
 

@@ -1,18 +1,29 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Leaf, Info } from "lucide-react";
-import { AWS_REGIONS } from "../../constants/regions";
+import { AWS_REGIONS, GCP_REGIONS } from "../../constants/regions";
 import { fetchCarbonIntensity } from "../services/api";
 
 export default function RenewableImpactSimulator() {
     const [provider, setProvider] = useState("AWS");
-    // Sort regions by name for better UX
-    const sortedRegions = [...AWS_REGIONS].sort((a, b) => a.name.localeCompare(b.name));
-    const [dataCenters, setDataCenters] = useState(sortedRegions);
-    const [selectedDC, setSelectedDC] = useState(sortedRegions[0]);
+
+    // Dynamically select regions based on provider
+    const sortedRegions = useMemo(() => {
+        const regions = provider === "GCP" ? GCP_REGIONS : AWS_REGIONS;
+        return [...regions].sort((a, b) => a.name.localeCompare(b.name));
+    }, [provider]);
+
+    const [selectedDC, setSelectedDC] = useState(null);
 
     const [carbonIntensity, setCarbonIntensity] = useState(null);
     const [renewablePercentage, setRenewablePercentage] = useState(0);
     const [loading, setLoading] = useState(false);
+
+    // Reset selected data center when provider changes
+    useEffect(() => {
+        if (sortedRegions.length > 0) {
+            setSelectedDC(sortedRegions[0]);
+        }
+    }, [provider, sortedRegions]);
 
     /* ===============================
        FETCH REAL-TIME DATA
@@ -23,8 +34,8 @@ export default function RenewableImpactSimulator() {
 
             try {
                 setLoading(true);
-                // Usage of shared API service
-                const results = await fetchCarbonIntensity([selectedDC.id]);
+                // Usage of shared API service (with provider)
+                const results = await fetchCarbonIntensity([selectedDC.id], provider);
 
                 if (results && results.length > 0) {
                     const data = results[0];
@@ -47,12 +58,12 @@ export default function RenewableImpactSimulator() {
        =============================== */
 
     const originalEmission =
-        carbonIntensity !== null
+        carbonIntensity !== null && selectedDC
             ? carbonIntensity * selectedDC.pue
             : 0;
 
     const adjustedEmission =
-        carbonIntensity !== null
+        carbonIntensity !== null && selectedDC
             ? carbonIntensity *
             (1 - renewablePercentage / 100) *
             selectedDC.pue
@@ -116,7 +127,7 @@ export default function RenewableImpactSimulator() {
                             className="w-full p-3 border rounded-lg"
                         >
                             <option value="AWS">AWS</option>
-                            {/* Add others when available in constants */}
+                            <option value="GCP">Google Cloud Platform</option>
                         </select>
                     </div>
 
@@ -126,15 +137,15 @@ export default function RenewableImpactSimulator() {
                             Data Center Region
                         </label>
                         <select
-                            value={selectedDC.id}
+                            value={selectedDC?.id || ""}
                             onChange={(e) =>
                                 setSelectedDC(
-                                    dataCenters.find((dc) => dc.id === e.target.value)
+                                    sortedRegions.find((dc) => dc.id === e.target.value)
                                 )
                             }
                             className="w-full p-3 border rounded-lg"
                         >
-                            {dataCenters.map((dc) => (
+                            {sortedRegions.map((dc) => (
                                 <option key={dc.id} value={dc.id}>
                                     {dc.name} (PUE {dc.pue})
                                 </option>
